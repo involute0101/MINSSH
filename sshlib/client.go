@@ -13,6 +13,7 @@ import (
 	"minlib/security"
 	"net"
 	"os"
+	"sshlib/terminal"
 	"sync"
 	"time"
 )
@@ -297,4 +298,150 @@ func BannerDisplayStderr() BannerCallback {
 
 		return err
 	}
+}
+
+type Cli struct {
+	IP       string  //IP地址,目前连接本机，不需要这个ip
+	Identity string  //用户名
+	Password string  //密码
+	Port     int     //端口号
+	client   *Client //ssh客户端
+	network  string
+	addr     string //MIN中监听的地址
+}
+
+func NewSshTerminal(ip string, identity string, password string, network string, addr string, port ...int) (*Cli, error) {
+	cli := new(Cli)
+	cli.IP = ip
+	cli.Identity = identity
+	cli.Password = password
+	cli.network = network
+	cli.addr = addr
+	if len(port) <= 0 {
+		cli.Port = 2222
+	} else {
+		cli.Port = port[0]
+	}
+
+	return cli, cli.connect()
+}
+
+// 连接
+func (c *Cli) connect() error {
+	sshConfig := &ClientConfig{
+		User: c.Identity, //没有作用，因为不需要linux的密码
+		Auth: []AuthMethod{
+			Password("secret"),
+		},
+		HostKeyCallback: InsecureIgnoreHostKey(),
+		ClientVersion:   "",
+		Timeout:         10 * time.Second,
+	}
+	sshClient, err := Dial(c.network, c.addr, sshConfig)
+	if err != nil {
+		return err
+	}
+	c.client = sshClient
+	return nil
+}
+
+// RunTerminal 执行带交互的命令
+func (c *Cli) RunTerminal(shell string) error {
+	session, err := c.newSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	return c.runTerminalSession(session, shell)
+}
+
+// runTerminalSession 执行带交互的命令
+func (c *Cli) runTerminalSession(session *Session, shell string) error {
+	fd := int(os.Stdin.Fd())
+	oldState, err := terminal.MakeRaw(fd)
+	if err != nil {
+		panic(err)
+	}
+	defer terminal.Restore(fd, oldState)
+
+	session.Stdout = os.Stdout
+	session.Stderr = os.Stdin
+	session.Stdin = os.Stdin
+
+	termWidth, termHeight, err := terminal.GetSize(fd)
+	if err != nil {
+		panic(err)
+	}
+	// Set up terminal modes
+	modes := TerminalModes{
+		ECHO:          1,     // enable echoing
+		TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+		TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+	}
+
+	// Request pseudo terminal
+	if err := session.RequestPty("xterm-256color", termHeight, termWidth, modes); err != nil {
+		return err
+	}
+
+	session.Run(shell)
+	return nil
+}
+
+// newSession new session
+func (c Cli) newSession() (*Session, error) {
+	if c.client == nil {
+		if err := c.connect(); err != nil {
+			return nil, err
+		}
+	}
+	session, err := c.client.NewSession()
+	if err != nil {
+		return nil, err
+	}
+
+	return session, nil
+}
+
+// EnterTerminal 完全进入终端,支持tab键和方向键
+func (c Cli) EnterTerminal() error {
+	session, err := c.newSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	fd := int(os.Stdin.Fd())
+	oldState, err := terminal.MakeRaw(fd)
+	if err != nil {
+		return err
+	}
+	defer terminal.Restore(fd, oldState)
+
+	session.Stdout = os.Stdout
+	session.Stderr = os.Stdin
+	session.Stdin = os.Stdin
+
+	termWidth, termHeight, err := terminal.GetSize(fd)
+	if err != nil {
+		return err
+	}
+
+	modes := TerminalModes{
+		ECHO:          1,
+		TTY_OP_ISPEED: 14400,
+		TTY_OP_OSPEED: 14400,
+	}
+	err = session.RequestPty("xterm-256color", termHeight, termWidth, modes)
+	if err != nil {
+		return err
+	}
+
+	err = session.Shell()
+	if err != nil {
+		return err
+	}
+
+	return session.Wait()
 }

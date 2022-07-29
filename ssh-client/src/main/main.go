@@ -1,23 +1,30 @@
 package main
 
 import (
-	"sshlib"
-	//"MINTCP/socket"
-	"log"
-	//"bufio"
 	"fmt"
-	//"minlib/common"
-	//"minlib/security"
-	"net"
-	"os"
-	//"ssh-client/src/main/process"
-	//_struct "ssh-client/src/main/struct"
-	//"strings"
-	"time"
+	ssh "sshlib"
 )
 
 func main() {
-	ce := func(err error, msg string) {
+	//以下内容应该为用户输入或者配置文件设定
+	//这里做example直接使用
+
+	ip := "127.0.0.1"
+	identity := "/localhost/operator"
+	passwd := "123456"
+	network := "min-push-tcp"
+	addr := "/localhost/operator"
+	port := 2222
+
+	//建立ssh连接，启动终端
+	c, err := ssh.NewSshTerminal(ip, identity, passwd, network, addr, port)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	// 进入
+	c.EnterTerminal()
+
+	/*ce := func(err error, msg string) {
 		if err != nil {
 			log.Fatalf("%s error: %v", msg, err)
 		}
@@ -59,43 +66,5 @@ func main() {
 	err = session.Shell()
 	ce(err, "start shell")
 
-	err = session.Wait()
-	////执行远程命令
-	//combo, err := session.CombinedOutput("whoami")
-	//if err != nil {
-	//	log.Fatal("远程执行cmd 失败", err.Error())
-	//}
-	//log.Println("命令输出:", string(combo))
-}
-
-func handleConnectionReader(c net.Conn) {
-	//sshReaderWriter := _struct.NewSshReaderWriter(c)
-	count := 0
-	result := ""
-	for {
-		buf := make([]byte, 1024)
-		n, err := c.Read(buf)
-		if err != nil {
-			fmt.Println("Error reading:", err.Error())
-			os.Exit(1)
-		}
-		if string(buf[:n]) == "登录成功！" {
-			fmt.Printf("%s", buf[:n])
-			fmt.Print("\n>")
-			count = 0
-		} else {
-			if count == 0 {
-				fmt.Printf("%s", buf[:n])
-				count++
-			} else if count == 1 {
-				result = result + "[" + string(buf[:n-1])
-				count++
-			} else {
-				result = result + " " + string(buf[:n-1])
-				count = 0
-				fmt.Print(result + "]>")
-				result = ""
-			}
-		}
-	}
+	err = session.Wait()*/
 }
