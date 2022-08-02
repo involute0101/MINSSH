@@ -46,11 +46,13 @@ func main() {
 		//io.WriteString(s, fmt.Sprintf("Hello %s\n", s.User()))
 	})
 
+	//以下内容应为用户输入或配置文件设定
 	identityName := "/localhost/operator"
+	unlockPasswd := "123456"
 	network := "min-push-tcp"
 	stackAddr := "/tmp/mir-tcp-message-channel-stack.sock"
 	log.Println("starting ssh server on port 2222...")
-	log.Fatal(ssh.ListenAndServe(":2222", nil, identityName, network, stackAddr,
+	log.Fatal(ssh.ListenAndServe(":2222", nil, identityName, unlockPasswd, network, stackAddr,
 		ssh.PasswordAuth(func(ctx ssh.Context, pass string) bool {
 			return pass == "secret"
 		})))

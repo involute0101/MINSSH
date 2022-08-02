@@ -330,7 +330,7 @@ func (srv *Server) handleRequests(ctx Context, in <-chan *gossh.Request) {
 // ListenAndServe listens on the TCP network address srv.Addr and then calls
 // Serve to handle incoming connections. If srv.Addr is blank, ":22" is used.
 // ListenAndServe always returns a non-nil error.
-func (srv *Server) ListenAndServe(identityName string, network string, stackAddr string, port uint64) error {
+func (srv *Server) ListenAndServe(identityName string, unlockPasswd string, network string, stackAddr string, port uint64) error {
 	addr := srv.Addr
 	if addr == "" {
 		addr = ":22"
@@ -354,7 +354,7 @@ func (srv *Server) ListenAndServe(identityName string, network string, stackAddr
 	identity := keyChain.GetIdentityByName(identityName)
 	//identity := keyChain.GetIdentityByName("/test/server")
 	// identity, err := keyChain.CreateIdentityByName("/test/server1", "123456")
-	_, err := identity.UnLock("123456", minsecurity.SM4ECB)
+	_, err := identity.UnLock(unlockPasswd, minsecurity.SM4ECB)
 	// TODO: require identity is unlock, if it's locked, please do unlock first
 	listener, err := socket.Listen(network, port, identity,
 		"unix", stackAddr)

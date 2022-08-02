@@ -101,7 +101,7 @@ func Serve(l net.Listener, handler Handler, options ...Option) error {
 // ListenAndServe listens on the TCP network address addr and then calls Serve
 // with handler to handle sessions on incoming connections. Handler is typically
 // nil, in which case the DefaultHandler is used.
-func ListenAndServe(addr string, handler Handler, identityName string, network string, stackAddr string, options ...Option) error {
+func ListenAndServe(addr string, handler Handler, identityName string, unlockPasswd string, network string, stackAddr string, options ...Option) error {
 	position := strings.Index(addr, ":")
 	portStr := addr[position+1:]
 	port, err := strconv.ParseUint(portStr, 10, 64)
@@ -115,7 +115,7 @@ func ListenAndServe(addr string, handler Handler, identityName string, network s
 			return err
 		}
 	}
-	return srv.ListenAndServe(identityName, network, stackAddr, port)
+	return srv.ListenAndServe(identityName, unlockPasswd, network, stackAddr, port)
 }
 
 // Handle registers the handler as the DefaultHandler.
