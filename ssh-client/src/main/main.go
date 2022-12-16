@@ -9,15 +9,15 @@ func main() {
 	//以下内容应该为用户输入或者配置文件设定
 	//这里做example直接使用
 
-	ip := "127.0.0.1"
-	identity := "/localhost/operator"
-	passwd := "123456"
+	ip := "175.6.147.57" //no use
+	username := "testuser"
+	passwd := "guo0124?"
 	network := "min-push-tcp"
-	addr := "/localhost/operator"
+	addr := "/minssh/server"
 	port := 2222
 
 	//建立ssh连接，启动终端
-	c, err := ssh.NewSshTerminal(ip, identity, passwd, network, addr, port)
+	c, err := ssh.NewSshTerminal(ip, username, passwd, network, addr, port)
 	if err != nil {
 		fmt.Println("err", err)
 	}

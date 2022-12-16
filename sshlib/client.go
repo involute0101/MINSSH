@@ -183,11 +183,11 @@ func Dial(network, addr string, config *ClientConfig) (*Client, error) {
 	if err := keyChain.Init(); err != nil {
 		common.LogFatal(err)
 	}
-	identity := keyChain.GetIdentityByName("/localhost/operator")
+	identity := keyChain.GetIdentityByName("/minssh/client")
 
 	// TODO: require identity is unlock, if it's locked, please do unlock first
 	conn, err := socket.Dial("min-push-tcp", identity, &socket.IdentifierAddr{
-		Name: "/localhost/operator",
+		Name: addr,
 		Port: 2222,
 	}, "unix", "/tmp/mir-tcp-message-channel-stack.sock",
 		"/tmp/mir-tcp-bytes-channel-stack.sock")
@@ -302,7 +302,7 @@ func BannerDisplayStderr() BannerCallback {
 
 type Cli struct {
 	IP       string  //IP地址,目前连接本机，不需要这个ip
-	Identity string  //用户名
+	UserName string  //用户名
 	Password string  //密码
 	Port     int     //端口号
 	client   *Client //ssh客户端
@@ -310,10 +310,10 @@ type Cli struct {
 	addr     string //MIN中监听的地址
 }
 
-func NewSshTerminal(ip string, identity string, password string, network string, addr string, port ...int) (*Cli, error) {
+func NewSshTerminal(ip string, username string, password string, network string, addr string, port ...int) (*Cli, error) {
 	cli := new(Cli)
 	cli.IP = ip
-	cli.Identity = identity
+	cli.UserName = username
 	cli.Password = password
 	cli.network = network
 	cli.addr = addr
@@ -329,9 +329,9 @@ func NewSshTerminal(ip string, identity string, password string, network string,
 // 连接
 func (c *Cli) connect() error {
 	sshConfig := &ClientConfig{
-		User: c.Identity, //没有作用，因为不需要linux的密码
+		User: c.UserName,
 		Auth: []AuthMethod{
-			Password("secret"),
+			Password(c.Password),
 		},
 		HostKeyCallback: InsecureIgnoreHostKey(),
 		ClientVersion:   "",
