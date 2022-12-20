@@ -45,7 +45,8 @@ func main() {
 	ssh.Handle(func(s ssh.Session) {
 
 		//cmd := exec.Command("/bin/sh", "/home/guozhan/login.sh")
-		cmd := exec.Command("/bin/bash")
+		cmd := exec.Command("/bin/bash", "command.sh")
+		fmt.Println(os.Getwd())
 		ptyReq, winCh, isPty := s.Pty()
 		if isPty {
 			cmd.Env = append(cmd.Env, fmt.Sprintf("TERM=%s", ptyReq.Term))
@@ -67,8 +68,6 @@ func main() {
 			io.WriteString(s, "No PTY requested.\n")
 			s.Exit(1)
 		}
-
-		//io.WriteString(s, fmt.Sprintf("Hello %s\n", s.User()))
 	})
 
 	//以下内容应为用户输入或配置文件设定

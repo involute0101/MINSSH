@@ -1,4 +1,4 @@
-package ssh_test
+package ssh_server_test
 
 import (
 	"github.com/gliderlabs/ssh"

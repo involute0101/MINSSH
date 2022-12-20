@@ -42,4 +42,4 @@ exposed to you via the Session interface.
 The one big feature missing from the Session abstraction is signals. This was
 started, but not completed. Pull Requests welcome!
 */
-package ssh
+package ssh_server

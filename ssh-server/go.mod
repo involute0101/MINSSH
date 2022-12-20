@@ -12,6 +12,6 @@ require (
 	minlib v0.0.0
 )
 
-replace minlib v0.0.0 => ./../../../minlib
+replace minlib v0.0.0 => ../../minlib
 
-replace MINTCP v0.0.0 => ./../../../MINTCP
+replace MINTCP v0.0.0 => ../../MINTCP

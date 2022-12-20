@@ -1,13 +1,13 @@
-package ssh
+package ssh_server
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/anmitsu/go-shlex"
 	"net"
 	"sync"
 
-	"github.com/anmitsu/go-shlex"
 	gossh "golang.org/x/crypto/ssh"
 )
 
