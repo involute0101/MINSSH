@@ -1,4 +1,4 @@
-package main
+package sshServer
 
 import (
 	"bufio"
@@ -14,6 +14,15 @@ import (
 	"syscall"
 	"unsafe"
 )
+
+const defaultConfigFilePath = "/usr/local/etc/mir/tcpstackconf.ini"
+
+type MINSSHStarter struct {
+}
+
+func NewMINSSHStarter() *MINSSHStarter {
+	return &MINSSHStarter{}
+}
 
 func setWinsize(f *os.File, w, h int) {
 	syscall.Syscall(syscall.SYS_IOCTL, f.Fd(), uintptr(syscall.TIOCSWINSZ),
@@ -41,7 +50,7 @@ func getUserPasswd(userName string) (string, error) {
 	return "", nil
 }
 
-func main() {
+func (m *MINSSHStarter) Start() {
 	ssh.Handle(func(s ssh.Session) {
 
 		//cmd := exec.Command("/bin/sh", "/home/guozhan/login.sh")
@@ -75,7 +84,7 @@ func main() {
 	unlockPasswd := "123456"
 	network := "min-push-tcp"
 	stackAddr := "/tmp/mir-tcp-message-channel-stack.sock"
-	log.Println("starting ssh server on port 2222...")
+	log.Println("starting ssh server...")
 	log.Fatal(ssh.ListenAndServe(":2222", nil, identityName, unlockPasswd, network, stackAddr,
 		ssh.PasswordAuth(func(ctx ssh.Context, userPwd string) bool {
 			log.Println("The currently logged in user is : ", ctx.User())
