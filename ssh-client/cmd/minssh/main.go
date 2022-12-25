@@ -12,9 +12,11 @@ import (
 )
 
 const defaultConfigFilePath = "/usr/local/etc/minssh/sshconf.ini"
+const defaultTCPConfigFilePath = "/usr/local/etc/mir/tcpstackconf.ini"
 
 func main() {
 	var configFilePath string
+	tcpConfigFilePath := "/usr/local/etc/mir/tcpstackconf.ini"
 	minsshClientApp := cli.NewApp()
 	minsshClientApp.Name = "MINSSH-Client"
 	minsshClientApp.Usage = " MINSSH-Client daemon program "
@@ -24,7 +26,14 @@ func main() {
 			Value:       defaultConfigFilePath,
 			Usage:       "Config file path for MINSSH-Client",
 			Destination: &configFilePath,
-			Required:    true,
+			Required:    false,
+		},
+		&cli.StringFlag{
+			Name:        "tcpf",
+			Value:       defaultTCPConfigFilePath,
+			Usage:       "Config file path for MINTCP",
+			Destination: &tcpConfigFilePath,
+			Required:    false,
 		},
 	}
 	minsshClientApp.Action = func(context *cli.Context) error {
@@ -45,12 +54,12 @@ func main() {
 		passwd = string(passwdBytes)
 
 		//Modify the tcp configuration file for remote connection
-		cfg, err := ini.Load("/usr/local/etc/mir/tcpstackconf.ini")
+		cfg, err := ini.Load(tcpConfigFilePath)
 		if err != nil {
 			log.Fatal("Fail to read file:", err)
 		}
 		cfg.Section("MIR").Key("MIRTCPHost").SetValue(remoteHost)
-		cfg.SaveTo("/usr/local/etc/mir/tcpstackconf.ini")
+		cfg.SaveTo(tcpConfigFilePath)
 
 		c, err := ssh.NewSshTerminal(remoteHost, userName, passwd, "min-push-tcp", "/minssh/server", 2222)
 		if err != nil {
